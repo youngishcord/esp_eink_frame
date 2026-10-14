@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-Ink Frame</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<header>
+  <h1>E-Ink Frame</h1>
+  <div id="status" class="status">loading…</div>
+</header>
+<nav>
+  <button data-tab="images" class="active">Images</button>
+  <button data-tab="network">Network</button>
+</nav>
+<main>
+  <section id="tab-images" class="tab active">
+    <div class="panel">
+      <h2>Add image</h2>
+      <input type="file" id="fileInput" accept="image/*">
+      <div id="editor" hidden>
+        <canvas id="editCanvas"></canvas>
+        <div class="controls">
+          <button id="rotL" title="Rotate left">⟲</button>
+          <button id="rotR" title="Rotate right">⟳</button>
+          <label><input type="checkbox" id="lockAspect" checked> Lock 5:3</label>
+          <label><input type="checkbox" id="dither"> Dither</label>
+          <button id="resetSel">Reset selection</button>
+        </div>
+        <div class="preview">
+          <h3>Preview (800×480, 6 colours)</h3>
+          <canvas id="previewCanvas" width="400" height="240"></canvas>
+        </div>
+        <div class="row">
+          <input type="text" id="imgName" placeholder="image name" maxlength="40">
+          <button id="saveBtn" class="primary">Save to frame</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Stored images <button id="refreshGallery" class="ghost">refresh</button></h2>
+      <div id="gallery" class="gallery"></div>
+    </div>
+  </section>
+
+  <section id="tab-network" class="tab">
+    <div class="panel">
+      <h2>Network</h2>
+      <div id="netInfo" class="netinfo"></div>
+      <label>Wi-Fi SSID <input type="text" id="ssid" placeholder="MyNetwork"></label>
+      <label>Password <input type="password" id="password" placeholder="••••••••"></label>
+      <div class="row">
+        <button id="saveWifi" class="primary">Connect</button>
+        <button id="resetWifi">Reset to setup AP</button>
+      </div>
+      <p class="hint">After connecting, the frame shows its new address on the display.</p>
+    </div>
+    <div class="panel">
+      <h2>Display</h2>
+      <button id="showStatus">Show status screen</button>
+      <p class="hint">Rendering a screen takes 20–35 seconds on this panel.</p>
+    </div>
+  </section>
+</main>
+<div id="toast" class="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
