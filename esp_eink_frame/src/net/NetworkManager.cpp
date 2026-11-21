@@ -71,6 +71,12 @@ void NetworkManager::disconnectStation() {
   WiFi.disconnect(false, false);
 }
 
+void NetworkManager::shutdown() {
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+  LOG_I("Net: radio off");
+}
+
 bool NetworkManager::stationConnected() const {
   return WiFi.status() == WL_CONNECTED;
 }

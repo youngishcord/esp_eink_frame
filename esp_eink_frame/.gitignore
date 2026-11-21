@@ -6,3 +6,6 @@
 
 # Generated from web/*.{html,css,js} at build time by tools/embed_web_assets.py
 src/web/WebAssets.generated.h
+
+# Scratch storage of tools/dev_server.py (the mock frame API)
+dev_store/

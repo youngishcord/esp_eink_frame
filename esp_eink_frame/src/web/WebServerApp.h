@@ -27,12 +27,14 @@ class WebServerApp {
   void handleListImages();
   void handleGetImage();
   void handleDeleteImage();
+  void handleRenameImage();
   void handleUploadComplete();
   void handleUploadData();
   void handleShowImage();
   void handleWifiSave();
   void handleWifiReset();
   void handleStatusScreen();
+  void handleAutonomyTest();
   void handleNotFound();
 
   void sendJson(int code, const String& body);
@@ -41,4 +43,5 @@ class WebServerApp {
   WebServer _server;
   File _uploadFile;
   String _uploadName;
+  String _uploadTitle;
 };

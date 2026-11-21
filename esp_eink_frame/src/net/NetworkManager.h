@@ -25,6 +25,9 @@ class NetworkManager {
 
   void disconnectStation();
 
+  // Turns the radio off completely (used before deep sleep).
+  void shutdown();
+
   bool stationConnected() const;
   bool apActive() const;
 

@@ -31,6 +31,7 @@ class AppController {
   void requestWifiChange(const String& ssid, const String& password);
   void requestWifiReset();
   void requestStatusScreen();
+  void requestAutonomyTest();
 
   // --- Queries ---
   Display& display() { return _display; }
@@ -44,15 +45,28 @@ class AppController {
   bool busy() const { return _busy; }
 
  private:
-  enum class Action { None, ShowImage, WifiChange, WifiReset, StatusScreen };
+  enum class Action {
+    None,
+    ShowImage,
+    WifiChange,
+    WifiReset,
+    StatusScreen,
+    AutonomyTest
+  };
 
   void handleBootNetwork();
+  bool mountSd();
   void processPendingAction();
-  void showImage(const String& name);
+  bool showImage(const String& name, bool persist = true);
   void showProvisioningScreen();
   void showConnectedScreen();
   void maybeSyncClock();
   void maybeReconnectStation();
+
+  void startAutonomyTest();
+  // Renders the next image, arms the RTC alarm and sleeps. Returns only when the
+  // alarm could not be armed.
+  bool runAutonomyCycle(bool firstCycle);
 
   Display _display;
   SdCard _sd;

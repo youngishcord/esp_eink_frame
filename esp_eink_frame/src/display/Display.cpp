@@ -80,8 +80,12 @@ bool Display::showRaw(Stream& source, size_t length) {
   return ok;
 }
 
-void Display::sleep() {
-  if (_ready) {
-    _gfx.hibernate();
+void Display::shutdown() {
+  if (!_ready) {
+    return;
   }
+  _gfx.hibernate();
+  _spi.end();
+  _ready = false;
+  LOG_I("Display: hibernated, VSPI released");
 }

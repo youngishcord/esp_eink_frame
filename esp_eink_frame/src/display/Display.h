@@ -41,8 +41,10 @@ class Display {
   // codes) from any source and refreshes the panel.
   bool showRaw(Stream& source, size_t length);
 
-  // Puts the panel to deep sleep (minimal power draw until the next reset).
-  void sleep();
+  // Hibernates the panel, releases the VSPI bus and marks the driver as stopped.
+  // Call before the shared power rail is switched off; begin() is required
+  // again once the rail is back.
+  void shutdown();
 
  private:
   display::Gfx _gfx;

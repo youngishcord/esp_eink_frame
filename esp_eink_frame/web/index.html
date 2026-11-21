@@ -1,66 +1,224 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10131a">
 <title>E-Ink Frame</title>
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
 <header>
-  <h1>E-Ink Frame</h1>
-  <div id="status" class="status">loading…</div>
+  <div class="brand">
+    <h1>E-Ink Frame</h1>
+    <span class="sub">7.3&Prime; Spectra 6 &middot; 800&times;480 &middot; 6 цветов</span>
+  </div>
+  <div id="status" class="status">загрузка&hellip;</div>
 </header>
 <nav>
-  <button data-tab="images" class="active">Images</button>
-  <button data-tab="network">Network</button>
+  <button data-tab="add" class="active">Добавить</button>
+  <button data-tab="library">Библиотека</button>
+  <button data-tab="network">Сеть</button>
+  <button data-tab="power">Питание</button>
 </nav>
 <main>
-  <section id="tab-images" class="tab active">
-    <div class="panel">
-      <h2>Add image</h2>
-      <input type="file" id="fileInput" accept="image/*">
-      <div id="editor" hidden>
-        <canvas id="editCanvas"></canvas>
-        <div class="controls">
-          <button id="rotL" title="Rotate left">⟲</button>
-          <button id="rotR" title="Rotate right">⟳</button>
-          <label><input type="checkbox" id="lockAspect" checked> Lock 5:3</label>
-          <label><input type="checkbox" id="dither"> Dither</label>
-          <button id="resetSel">Reset selection</button>
+  <!-- ========================== ДОБАВИТЬ ФОТО =========================== -->
+  <section id="tab-add" class="tab active">
+
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Выбрать фотографию">
+      <div class="drop-main">Перетащите фотографию сюда или нажмите, чтобы выбрать</div>
+      <div class="drop-sub">Можно выбрать сразу несколько — каждая сохранится под своим именем</div>
+      <button id="chooseBtn" class="primary" type="button">Выбрать файлы</button>
+      <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    </div>
+
+    <ol id="queue" class="queue" hidden></ol>
+
+    <div id="editor" class="editor" hidden>
+      <div class="stage">
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Кадрирование</h2>
+            <div class="tools">
+              <button id="rotL" type="button" title="Повернуть на 90° влево" aria-label="Повернуть влево">&#10226;</button>
+              <button id="rotR" type="button" title="Повернуть на 90° вправо" aria-label="Повернуть вправо">&#10227;</button>
+              <button id="flipH" type="button" title="Отразить по горизонтали" aria-label="Отразить по горизонтали">&#8646;</button>
+              <button id="flipV" type="button" title="Отразить по вертикали" aria-label="Отразить по вертикали">&#8645;</button>
+            </div>
+            <label class="inline">Рамка
+              <select id="aspect">
+                <option value="0">Свободная</option>
+                <option value="1.6667" selected>5:3 — экран рамки</option>
+                <option value="1">1:1</option>
+                <option value="1.3333">4:3</option>
+                <option value="0.75">3:4</option>
+                <option value="1.7778">16:9</option>
+              </select>
+            </label>
+            <button id="resetSel" class="ghost" type="button">Сбросить кадр</button>
+            <button id="clearBtn" class="ghost" type="button">Убрать фото</button>
+          </div>
+          <canvas id="editCanvas"></canvas>
+          <p class="hint">Тяните рамку, чтобы двигать её, или уголки, чтобы менять размер. Всё, что
+            останется за рамкой, не попадёт на экран.</p>
         </div>
-        <div class="preview">
-          <h3>Preview (800×480, 6 colours)</h3>
-          <canvas id="previewCanvas" width="400" height="240"></canvas>
-        </div>
-        <div class="row">
-          <input type="text" id="imgName" placeholder="image name" maxlength="40">
-          <button id="saveBtn" class="primary">Save to frame</button>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Превью экрана</h2>
+            <span id="previewInfo" class="badge" title="Сколько времени занял пересчёт"></span>
+            <button id="refreshPreview" class="primary" type="button" hidden>Обновить превью</button>
+            <label class="inline"><input type="checkbox" id="autoRender"> Авто</label>
+            <label class="inline"><input type="checkbox" id="zoomReal"> 1:1</label>
+            <button id="compareBtn" class="ghost" type="button"
+                    title="Удерживайте, чтобы увидеть оригинал без обработки">Сравнение</button>
+          </div>
+          <div class="preview-wrap">
+            <canvas id="previewCanvas" width="800" height="480"></canvas>
+          </div>
+          <p class="hint">Пересчёт запускается кнопкой: ползунки сами превью не обновляют.
+            Сохранение всегда пересчитывает кадр заново.</p>
         </div>
       </div>
-    </div>
-    <div class="panel">
-      <h2>Stored images <button id="refreshGallery" class="ghost">refresh</button></h2>
-      <div id="gallery" class="gallery"></div>
+
+      <aside class="side">
+        <div class="panel">
+          <div class="panel-head"><h2>Имя фотографии</h2></div>
+          <input type="text" id="imgTitle" maxlength="60" placeholder="Например: Море летом"
+                 autocomplete="off">
+          <div id="nameHint" class="hint"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Пресеты</h2></div>
+          <div id="presets" class="chips"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Экран</h2></div>
+          <label class="inline">Цвета
+            <select id="paletteMode">
+              <option value="color" selected>Все 6 (Spectra)</option>
+              <option value="bw">Только ч/б</option>
+              <option value="custom">Свои</option>
+            </select>
+          </label>
+          <div id="palettePick" class="chips" hidden></div>
+          <label class="inline">Дизеринг
+            <select id="ditherMode">
+              <option value="fs" selected>Флойда–Стейнберга</option>
+              <option value="none">Нет (плашки)</option>
+              <option value="atkinson">Эткинсона</option>
+              <option value="burkes">Бёркса</option>
+              <option value="bayer">Упорядоченный (Bayer)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Коррекция</h2>
+            <button id="resetAdjust" class="ghost" type="button">Сбросить всё</button>
+          </div>
+          <div id="adjustGroups"></div>
+
+          <details class="acc" id="acc-toning">
+            <summary>Тонирование<span class="acc-note"></span></summary>
+            <div class="acc-body">
+              <select id="toneSelect" aria-label="Тонирование"></select>
+              <label class="inline"><input type="checkbox" id="invertCheck"> Инвертировать</label>
+            </div>
+          </details>
+        </div>
+
+        <div class="side-actions">
+          <button id="saveBtn" class="primary" type="button">Сохранить на рамку</button>
+          <button id="saveCopyBtn" type="button" hidden>Сохранить как новое фото</button>
+          <button id="saveAllBtn" type="button" hidden>Сохранить все</button>
+          <label class="inline replace-label" hidden id="replaceWrap">
+            <input type="checkbox" id="replaceExisting">
+            <span>Заменить фото с таким же именем</span>
+          </label>
+          <div id="progress" class="progress" hidden></div>
+        </div>
+      </aside>
     </div>
   </section>
 
+  <!-- =========================== БИБЛИОТЕКА ============================= -->
+  <section id="tab-library" class="tab">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Фотографии на рамке <span id="libCount" class="badge"></span></h2>
+        <input type="search" id="libSearch" placeholder="Поиск по имени&hellip;" autocomplete="off">
+        <select id="libSort" title="Сортировка">
+          <option value="new">Сначала новые</option>
+          <option value="old">Сначала старые</option>
+          <option value="name">По имени</option>
+          <option value="size">По размеру</option>
+        </select>
+        <button id="refreshGallery" class="ghost" type="button">Обновить</button>
+        <button id="goAddBtn" class="primary" type="button">Добавить фото</button>
+      </div>
+      <div id="sdInfo" class="hint"></div>
+      <ul id="gallery" class="list"></ul>
+      <div id="detail" class="detail" hidden>
+        <div class="detail-head">
+          <strong id="detailTitle"></strong>
+          <span id="detailMeta" class="hint"></span>
+        </div>
+        <div class="preview-wrap">
+          <canvas id="detailCanvas" width="800" height="480"></canvas>
+        </div>
+        <p class="hint">Превью берётся с карты, поэтому грузится только для выбранного фото.</p>
+        <div class="detail-actions">
+          <button id="detailShow" class="primary" type="button">Показать на экране</button>
+          <button id="detailRename" type="button">Переименовать</button>
+          <button id="detailEdit" type="button">Открыть в редакторе</button>
+          <button id="detailDownload" type="button">Скачать .e6</button>
+          <button id="detailDelete" class="danger" type="button">Удалить</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ СЕТЬ ============================== -->
   <section id="tab-network" class="tab">
     <div class="panel">
-      <h2>Network</h2>
+      <h2>Состояние</h2>
       <div id="netInfo" class="netinfo"></div>
-      <label>Wi-Fi SSID <input type="text" id="ssid" placeholder="MyNetwork"></label>
-      <label>Password <input type="password" id="password" placeholder="••••••••"></label>
-      <div class="row">
-        <button id="saveWifi" class="primary">Connect</button>
-        <button id="resetWifi">Reset to setup AP</button>
-      </div>
-      <p class="hint">After connecting, the frame shows its new address on the display.</p>
     </div>
     <div class="panel">
-      <h2>Display</h2>
-      <button id="showStatus">Show status screen</button>
-      <p class="hint">Rendering a screen takes 20–35 seconds on this panel.</p>
+      <h2>Wi-Fi</h2>
+      <label>Имя сети (SSID) <input type="text" id="ssid" placeholder="MyNetwork" autocomplete="off"></label>
+      <label>Пароль <input type="password" id="password" placeholder="••••••••" autocomplete="off"></label>
+      <div class="row">
+        <button id="saveWifi" class="primary" type="button">Подключиться</button>
+        <button id="resetWifi" type="button">Сбросить в режим настройки</button>
+      </div>
+      <p class="hint">После подключения новый адрес появится на экране рамки.</p>
+    </div>
+    <div class="panel">
+      <h2>Экран</h2>
+      <button id="showStatus" type="button">Показать экран статуса</button>
+      <p class="hint">Полная перерисовка этой панели занимает 20–35 секунд.</p>
+    </div>
+  </section>
+
+  <!-- =============================== ПИТАНИЕ ============================ -->
+  <section id="tab-power" class="tab">
+    <div class="panel">
+      <h2>Тест автономности</h2>
+      <p class="hint">
+        Рамка показывает следующий снимок с SD-карты, ставит будильник DS3231 на
+        минуту вперёд и уходит в глубокий сон. Так до нажатия кнопки reset или
+        до разряда батареи.
+      </p>
+      <button id="autonomyTest" class="primary" type="button">Тестировать автономность</button>
+      <p class="hint">
+        Во время сна Wi-Fi и эта страница недоступны. Нужно подключить
+        SQW/INT у DS3231 к GPIO32.
+      </p>
     </div>
   </section>
 </main>
